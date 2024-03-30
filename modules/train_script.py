@@ -47,7 +47,7 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
     base_net = BaseNet1D(input_channels=300, sequence_length=10000)
-    siamese_model = SiameseNetwork(base_net)
+    siamese_model = SiameseNetwork(base_net).to(device)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
