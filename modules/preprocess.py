@@ -2,7 +2,7 @@ import spacy
 import re
 import string
 import html
-nlp = spacy.load("fr_core_news_sm")
+nlp = spacy.load("fr_core_news_md")
 
 def expand_contractions(text):
     update_text = []
@@ -14,7 +14,7 @@ def expand_contractions(text):
     return (" ").join(update_text)
 
 def spacy_tokenizer(text):
-    nlp = spacy.load("fr_core_news_sm")
+    nlp = spacy.load("fr_core_news_md")
     return [tok.text for tok in nlp.tokenizer(str(text))]
 
 def text_edit(dataset,grp_num=False,rm_newline=False,rm_punctuation=False,lowercase=False,lemmatize=False,html_=False,expand=False):
