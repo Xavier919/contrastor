@@ -40,21 +40,18 @@ if __name__ == "__main__":
     shape = vector.shape[0]
 
     train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 1000)
-    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True)
+    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=8)
 
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 200)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
 
-    print('checkpoint1')
     base_net = BaseNet1D(input_channels=300, sequence_length=10000)
     siamese_model = SiameseNetwork(base_net).to(device)
-    print('checkpoint1')
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     epochs = args.epochs
     best_accuracy = 0
     for epoch in range(epochs):
-        print('checkpoint1')
         train_loss = train_epoch(siamese_model, train_loader, optimizer, device)
         val_accuracy = eval_model(siamese_model, train_loader, device)
         print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
