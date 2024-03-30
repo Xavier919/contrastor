@@ -18,12 +18,13 @@ parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
+parser.add_argument("lr", type=float)
 parser.add_argument("max_len", type=int)
 args = parser.parse_args()
 
 
 if __name__ == "__main__":
-    
+
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
     dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=False,convert_entities=False,expand=False)
@@ -43,18 +44,17 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 5000)
-    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 50000)
+    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True)
 
-    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 1000)
-    test_loader = DataLoader(test_dataset, batch_size=4)
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 10000)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
     base_net = BaseNet1D(input_channels=300, sequence_length=10000)
     siamese_model = SiameseNetwork(base_net)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
-    optimizer = optim.RMSprop(siamese_model.parameters(), lr=0.0001)
-
+    optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     epochs = args.epochs
     best_accuracy = 0
