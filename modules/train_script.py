@@ -4,12 +4,7 @@ import torch
 from modules.preprocess import text_edit
 from modules.utils import *
 from modules.model import BaseNet1D, SiameseNetwork
-import spacy
 from gensim.models import KeyedVectors
-from keras.layers import Lambda, Input
-from keras.models import Model
-from keras.optimizers import RMSprop
-from keras.callbacks import ModelCheckpoint
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim

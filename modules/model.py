@@ -1,5 +1,6 @@
 import torch.nn as nn
 import torch.nn.functional as F
+from modules.utils import euclid_dis
 
 class BaseNet1D(nn.Module):
     def __init__(self, input_channels, sequence_length):
