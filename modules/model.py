@@ -1,4 +1,4 @@
-from keras.layers import Flatten, Dense, Dropout, Flatten, Lambda, Input, Conv1D, AveragePooling1D, MaxPooling1D
+from keras.layers import Flatten, Dense, Dropout, Flatten, Input, Conv1D, AveragePooling1D, MaxPooling1D
 from keras.models import Model
 
 def create_base_net_1D(input_shape):

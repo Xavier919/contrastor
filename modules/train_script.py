@@ -1,6 +1,5 @@
 from sklearn.model_selection import train_test_split
 import argparse
-import numpy as np
 import torch
 from modules.preprocess import text_edit
 from modules.utils import build_dataset, text_to_word2vec, zip_set, euclid_dis, eucl_dist_output_shape, contrastive_loss, accuracy
