@@ -8,7 +8,6 @@ from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim
-import nltk
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -40,10 +39,10 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 50000)
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 1000)
     train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True)
 
-    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 10000)
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 200)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
     base_net = BaseNet1D(input_channels=300, sequence_length=10000)
