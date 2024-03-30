@@ -1,9 +1,10 @@
 import pandas as pd
-from nltk.tokenize import word_tokenize
 import numpy as np
 import random
 import torch
 import nltk
+from nltk.tokenize import word_tokenize
+nltk.download('punkt')
 
 def build_dataset(path, num_samples=-1, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")
