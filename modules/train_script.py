@@ -21,8 +21,6 @@ args = parser.parse_args()
 
 if __name__ == "__main__":
 
-    nltk.download('punkt')
-
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
     dataset = text_edit(dataset,grp_num=False,rm_newline=False,rm_punctuation=False,lowercase=False,lemmatize=False,html_=False,expand=False)
