@@ -43,10 +43,10 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    X_train = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32) for x in X_train], dim=0)
-    X_test = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32) for x in X_test], dim=0)
-    Y_train = torch.tensor(Y_train, dtype=torch.long)
-    Y_test = torch.tensor(Y_test, dtype=torch.long)
+    X_train = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32).to(device) for x in X_train], dim=0)
+    X_test = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32).to(device) for x in X_test], dim=0)
+    Y_train = torch.tensor(Y_train, dtype=torch.long).to(device)
+    Y_test = torch.tensor(Y_test, dtype=torch.long).to(device)
 
     tp =  args.num_samples * 5
     tt =  args.num_samples * 1
@@ -55,7 +55,7 @@ if __name__ == "__main__":
 
     test_pairs, test_labels = zip_set(X_test, Y_test, num_pairs=tt)
 
-    base_network  = create_base_net_1D((shape,args.max_len))
+    base_network  = create_base_net_1D((shape,args.max_len)).to(device)
 
 
     input_a = Input(shape=(shape,args.max_len))
@@ -69,7 +69,7 @@ if __name__ == "__main__":
     model = Model([input_a, input_b], distance)
 
     model_checkpoint_callback = ModelCheckpoint(
-        filepath='path/to/save/model',  
+        filepath='best_model',  
         save_weights_only=False,  
         monitor='val_accuracy',  
         mode='max',  
@@ -78,8 +78,8 @@ if __name__ == "__main__":
     epochs=args.epochs
     rms = RMSprop()
     model.compile(loss=contrastive_loss, optimizer=rms, metrics=[accuracy])
-    model.fit([train_pairs[:, 0], train_pairs[:, 1]], train_labels,
+    model.fit([train_pairs[:, 0].to(device), train_pairs[:, 1].to(device)], train_labels,
             batch_size=args.batch_size,
             epochs=epochs,
-            validation_data=([test_pairs[:, 0], test_pairs[:, 1]], test_labels),
+            validation_data=([test_pairs[:, 0].to(device), test_pairs[:, 1].to(device)], test_labels),
             callbacks=[model_checkpoint_callback])
