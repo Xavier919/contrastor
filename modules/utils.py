@@ -4,7 +4,6 @@ import numpy as np
 import random
 import torch
 import nltk
-nltk.download('punkt')
 
 def build_dataset(path, num_samples=-1, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")

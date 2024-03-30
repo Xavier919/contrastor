@@ -8,6 +8,7 @@ from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim
+import nltk
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -19,6 +20,8 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
+
+    nltk.download('punkt')
 
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
