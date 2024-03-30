@@ -24,13 +24,13 @@ class BaseNet1D(nn.Module):
     def forward(self, x):
         x = F.relu(self.conv1(x))
         x = self.avg_pool1(x)
-        x = F.relu(self.conv2(x))
+        x = F.tanh(self.conv2(x))
         x = self.max_pool1(x)
         x = self.dropout1(x)
         x = self.flatten(x)
-        x = F.relu(self.fc1(x))
+        x = F.tanh(self.fc1(x))
         x = self.dropout2(x)
-        x = F.relu(self.fc2(x))
+        x = F.tanh(self.fc2(x))
         x = self.dropout3(x)
         x = self.fc3(x)
         return x
