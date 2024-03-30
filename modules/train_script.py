@@ -22,7 +22,7 @@ if __name__ == "__main__":
 
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
-    dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=False,convert_entities=False,expand=False)
+    dataset = text_edit(dataset,grp_num=False,rm_newline=False,rm_punctuation=False,lowercase=False,lemmatize=False,html_=False,expand=False)
 
     X = [x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'affaires', 'arts', 'international']]
     Y = [x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'affaires', 'arts', 'international']]
