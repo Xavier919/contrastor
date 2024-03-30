@@ -45,15 +45,16 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 200)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size)
 
+    print('checkpoint1')
     base_net = BaseNet1D(input_channels=300, sequence_length=10000)
     siamese_model = SiameseNetwork(base_net).to(device)
-
-    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    print('checkpoint1')
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     epochs = args.epochs
     best_accuracy = 0
     for epoch in range(epochs):
+        print('checkpoint1')
         train_loss = train_epoch(siamese_model, train_loader, optimizer, device)
         val_accuracy = eval_model(siamese_model, train_loader, device)
         print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
