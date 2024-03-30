@@ -15,6 +15,8 @@ parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
 parser.add_argument("max_len", type=int)
+parser.add_argument("train_samples", type=int)
+parser.add_argument("test_samples", type=int)
 args = parser.parse_args()
 
 
@@ -39,13 +41,13 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 1000)
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.train_samples)
     train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=8)
 
-    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 200)
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
 
-    base_net = BaseNet1D(input_channels=300, sequence_length=10000)
+    base_net = BaseNet1D(input_channels=shape, sequence_length=args.max_len)
     siamese_model = SiameseNetwork(base_net).to(device)
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
