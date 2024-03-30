@@ -2,14 +2,17 @@ from sklearn.model_selection import train_test_split
 import argparse
 import torch
 from modules.preprocess import text_edit
-from modules.utils import build_dataset, text_to_word2vec, zip_set, euclid_dis, eucl_dist_output_shape, contrastive_loss, accuracy
-from modules.model import create_base_net_1D
+from modules.utils import *
+from modules.model import BaseNet1D, SiameseNetwork
 import spacy
 from gensim.models import KeyedVectors
 from keras.layers import Lambda, Input
 from keras.models import Model
 from keras.optimizers import RMSprop
 from keras.callbacks import ModelCheckpoint
+from modules.dataloader import PairedWord2VecDataset
+from torch.utils.data import DataLoader
+import torch.optim as optim
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -20,10 +23,8 @@ args = parser.parse_args()
 
 
 if __name__ == "__main__":
-
-    nlp = spacy.load("fr_core_news_sm")
-
-    dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, max_len=args.max_len, rnd_state=10)
+    
+    dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
     dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=False,convert_entities=False,expand=False)
 
@@ -42,43 +43,27 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    X_train = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32).to(device) for x in X_train], dim=0)
-    X_test = torch.stack([torch.tensor(text_to_word2vec(x, word2vec_model), dtype=torch.float32).to(device) for x in X_test], dim=0)
-    Y_train = torch.tensor(Y_train, dtype=torch.long).to(device)
-    Y_test = torch.tensor(Y_test, dtype=torch.long).to(device)
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, 5000)
+    train_loader = DataLoader(train_dataset, batch_size=4, shuffle=True)
 
-    tp =  args.num_samples * 5
-    tt =  args.num_samples * 1
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, 1000)
+    test_loader = DataLoader(test_dataset, batch_size=4)
 
-    train_pairs, train_labels = zip_set(X_train, Y_train, num_pairs=tp)
+    base_net = BaseNet1D(input_channels=300, sequence_length=10000)
+    siamese_model = SiameseNetwork(base_net)
 
-    test_pairs, test_labels = zip_set(X_test, Y_test, num_pairs=tt)
-
-    base_network  = create_base_net_1D((shape,args.max_len)).to(device)
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    optimizer = optim.RMSprop(siamese_model.parameters(), lr=0.0001)
 
 
-    input_a = Input(shape=(shape,args.max_len))
-    input_b = Input(shape=(shape,args.max_len))
-
-    processed_a = base_network(input_a)
-    processed_b = base_network(input_b)
-
-    distance = Lambda(euclid_dis,output_shape=eucl_dist_output_shape)([processed_a, processed_b])
-
-    model = Model([input_a, input_b], distance)
-
-    model_checkpoint_callback = ModelCheckpoint(
-        filepath='best_model',  
-        save_weights_only=False,  
-        monitor='val_accuracy',  
-        mode='max',  
-        save_best_only=True) 
-
-    epochs=args.epochs
-    rms = RMSprop()
-    model.compile(loss=contrastive_loss, optimizer=rms, metrics=[accuracy])
-    model.fit([train_pairs[:, 0].to(device), train_pairs[:, 1].to(device)], train_labels,
-            batch_size=args.batch_size,
-            epochs=epochs,
-            validation_data=([test_pairs[:, 0].to(device), test_pairs[:, 1].to(device)], test_labels),
-            callbacks=[model_checkpoint_callback])
+    epochs = args.epochs
+    best_accuracy = 0
+    for epoch in range(epochs):
+        train_loss = train_epoch(siamese_model, train_loader, optimizer, device)
+        val_accuracy = eval_model(siamese_model, train_loader, device)
+        print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
+        
+        if val_accuracy > best_accuracy:
+            best_accuracy = val_accuracy
+            torch.save(siamese_model.state_dict(), 'best_model.pth')
+            print("Model saved as best model")
