@@ -4,7 +4,7 @@ from modules.utils import euclid_dis
 import torch
 
 class BaseNet1D(nn.Module):
-    def __init__(self, input_channels=300, sample_length=10000, out_features=32):
+    def __init__(self, input_channels=300, in_features=625, out_features=32):
         super(BaseNet1D, self).__init__()
         self.maxpool = nn.MaxPool1d(kernel_size=2)
         self.conv1 = self.conv_block(input_channels, 250, k=5)
@@ -13,15 +13,8 @@ class BaseNet1D(nn.Module):
         self.conv4 = self.conv_block(150, 100, k=5)
         self.conv5 = self.conv_block(100, 50, k=5)
         self.convf = self.final_block(50, 1)
+        self.fc = nn.Linear(in_features=in_features, out_features=out_features)
 
-        with torch.no_grad():
-            self.fc_in_features = self._get_conv_output_shape(sample_length)
-        self.fc = nn.Linear(in_features=self.fc_in_features, out_features=out_features)
-
-    def _get_conv_output_shape(self, sample_length):
-        dummy_input = torch.zeros(1, self.conv1[0].in_channels, sample_length)
-        output = self.forward_conv(dummy_input)
-        return int(torch.numel(output) / output.shape[0])
 
     def forward_conv(self, x):
         x = self.conv1(x)
