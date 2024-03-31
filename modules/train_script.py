@@ -4,6 +4,7 @@ import torch
 from modules.preprocess import text_edit
 from modules.utils import *
 from modules.model import BaseNet1D, SiameseNetwork
+from modules.rnn_model import BaseNetRNN, SiameseRNN
 from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
@@ -47,8 +48,12 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
 
-    base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
-    siamese_model = SiameseNetwork(base_net).to(device)
+    #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
+    #siamese_model = SiameseNetwork(base_net).to(device)
+
+    base_net = BaseNetRNN(input_features=shape, hidden_dim=128, num_layers=2, out_features=32)
+    siamese_model = SiameseRNN(base_net)
+
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     epochs = args.epochs
