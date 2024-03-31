@@ -4,7 +4,7 @@ from modules.utils import euclid_dis
 import torch
 
 class BaseNet1D(nn.Module):
-    def __init__(self, input_channels=300, sample_length=20000, out_features=32):
+    def __init__(self, input_channels=300, sample_length=10000, out_features=32):
         super(BaseNet1D, self).__init__()
         self.maxpool = nn.MaxPool1d(kernel_size=2)
         self.conv1 = self.conv_block(input_channels, 250, k=5)
