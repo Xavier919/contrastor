@@ -9,6 +9,8 @@ from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim
+from torch import optim, nn
+from torch.nn.parallel import DataParallel
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -49,10 +51,15 @@ if __name__ == "__main__":
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
 
     base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
-    siamese_model = SiameseNetwork(base_net).to(device)
+    siamese_model = SiameseNetwork(base_net)
 
-    #base_net = BaseNetRNN(input_features=10000, hidden_dim=128, num_layers=2, out_features=32)
-    #siamese_model = SiameseRNN(base_net).to(device)
+    if torch.cuda.device_count() > 1:
+        print(f"Let's use {torch.cuda.device_count()} GPUs!")
+        siamese_model = nn.DataParallel(siamese_model)
+
+    siamese_model = siamese_model.to(device)
+
+
 
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
@@ -65,5 +72,8 @@ if __name__ == "__main__":
         
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
-            torch.save(siamese_model.state_dict(), 'best_model.pth')
+            if isinstance(siamese_model, nn.DataParallel):
+                torch.save(siamese_model.module.state_dict(), 'best_model.pth')
+            else:
+                torch.save(siamese_model.state_dict(), 'best_model.pth')
             print("Model saved as best model")
