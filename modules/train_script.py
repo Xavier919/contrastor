@@ -51,7 +51,7 @@ if __name__ == "__main__":
     #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
     #siamese_model = SiameseNetwork(base_net).to(device)
 
-    base_net = BaseNetRNN(input_features=shape, hidden_dim=128, num_layers=2, out_features=32)
+    base_net = BaseNetRNN(input_features=10000, hidden_dim=128, num_layers=2, out_features=32)
     siamese_model = SiameseRNN(base_net)
 
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
