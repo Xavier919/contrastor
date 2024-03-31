@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from torch import optim, nn
 from torch.nn.parallel import DataParallel
+from modules.transformer_model import BaseNetTransformer, SiameseTransformer
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -50,8 +51,10 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
-    base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
-    siamese_model = SiameseNetwork(base_net)
+    #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
+    #siamese_model = SiameseNetwork(base_net)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=2, out_features=32)
+    siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
         print(f"Let's use {torch.cuda.device_count()} GPUs!")
