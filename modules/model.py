@@ -14,6 +14,8 @@ class BaseNet1D(nn.Module):
         self.conv5 = self.conv_block(100, 50, k=5)
         self.convf = self.final_block(50, 1)
 
+        with torch.no_grad():
+            self.fc_in_features = self._get_conv_output_shape(sample_length)
         self.fc = nn.Linear(in_features=self.fc_in_features, out_features=out_features)
 
     def _get_conv_output_shape(self, sample_length):
