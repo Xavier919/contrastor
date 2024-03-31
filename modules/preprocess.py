@@ -2,7 +2,7 @@ import spacy
 import re
 import string
 import html
-nlp = spacy.load("fr_core_news_md")
+nlp = spacy.load("fr_core_news_sm")
 
 def expand_contractions(text):
     update_text = []

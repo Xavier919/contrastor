@@ -19,68 +19,6 @@ def build_dataset(path, num_samples=-1, rnd_state=42):
 def preprocess_text(text, language="french"):
     return word_tokenize(text.lower(), language=language)
 
-def text_to_word2vec(text, model, max_len=20000):
-    words = preprocess_text(text)
-    vectors = [model[word] for word in words if word in model]
-    
-    if len(vectors) == 0:
-        padded_array = np.zeros((model.vector_size, max_len))
-    else:
-        stacked_vectors = np.stack(vectors).T
-        
-        if stacked_vectors.shape[1] < max_len:
-            total_padding = max_len - stacked_vectors.shape[1]
-            padding_before = total_padding // 2
-            padding_after = total_padding - padding_before
-            padded_array = np.pad(stacked_vectors, ((0, 0), (padding_before, padding_after)), 'constant')
-        elif stacked_vectors.shape[1] > max_len:
-            excess_length = stacked_vectors.shape[1] - max_len
-            trim_before = excess_length // 2
-            trim_after = excess_length - trim_before
-            padded_array = stacked_vectors[:, trim_before:-trim_after]
-        else:
-            padded_array = stacked_vectors
-    
-    return padded_array
-
-def zip_set(X, Y, num_pairs):
-    zipped_list = list(zip(X, Y))
-    pairs = []
-    labels = []
-    num_pairs = num_pairs
-    for _ in range(num_pairs):
-        sample1, sample2 = random.sample(zipped_list, 2)
-        pairs.append([sample1[0], sample2[0]])
-        if sample1[1] == sample2[1]:
-            labels.append(1)
-        else:
-            labels.append(0) 
-    pairs = np.array(pairs)
-    labels = np.array(labels)
-    return pairs, labels
-
-def euclid_dis(vects):
-    x, y = vects
-    x_flat = x.view(x.size(0), -1)  
-    y_flat = y.view(y.size(0), -1)  
-    sum_square = torch.sum(torch.square(x_flat - y_flat), axis=1, keepdim=True)
-    return torch.sqrt(torch.maximum(sum_square, torch.tensor(torch.finfo(float).eps).to(sum_square.device)))
-
-def contrastive_loss(y_true, y_pred, margin=1.0):
-    square_pred = torch.square(y_pred)
-    margin_square = torch.square(torch.clamp(margin - y_pred, min=0))
-    loss = torch.mean(y_true * square_pred + (1 - y_true) * margin_square)
-    return loss
-
-def calculate_accuracy(y_pred, y_true):
-    pred_labels = (y_pred < 0.5).float()  
-    correct = (pred_labels == y_true).float()  
-    accuracy = correct.mean()  
-    return accuracy
-
-def preprocess_text(text, language="french"):
-    return word_tokenize(text.lower(), language=language)
-
 def text_to_word2vec(text, model, max_len=10000):
     words = preprocess_text(text)
     vectors = [model[word] for word in words if word in model]
@@ -105,6 +43,25 @@ def text_to_word2vec(text, model, max_len=10000):
     
     return padded_array
 
+def euclid_dis(vects):
+    x, y = vects
+    x_flat = x.view(x.size(0), -1)  
+    y_flat = y.view(y.size(0), -1)  
+    sum_square = torch.sum(torch.square(x_flat - y_flat), axis=1, keepdim=True)
+    return torch.sqrt(torch.maximum(sum_square, torch.tensor(torch.finfo(float).eps).to(sum_square.device)))
+
+def contrastive_loss(y_true, y_pred, margin=1.0):
+    square_pred = torch.square(y_pred)
+    margin_square = torch.square(torch.clamp(margin - y_pred, min=0))
+    loss = torch.mean(y_true * square_pred + (1 - y_true) * margin_square)
+    return loss
+
+def calculate_accuracy(y_pred, y_true):
+    pred_labels = (y_pred < 0.5).float()  
+    correct = (pred_labels == y_true).float()  
+    accuracy = correct.mean()  
+    return accuracy
+
 def train_epoch(model, dataloader, optimizer, device):
     model.train()
     total_loss = 0
@@ -112,7 +69,7 @@ def train_epoch(model, dataloader, optimizer, device):
         data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data_a, data_b)  
-        loss = contrastive_loss(output, target)
+        loss = contrastive_loss(target, output)
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
