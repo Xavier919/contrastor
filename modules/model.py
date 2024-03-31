@@ -23,18 +23,22 @@ class BaseNet1D(nn.Module):
         output = self.forward_conv(dummy_input)
         return int(torch.numel(output) / output.shape[0])
 
-    def forward(self, x):
+    def forward_conv(self, x):
         x = self.conv1(x)
         x = self.maxpool(x)
-        x = self.conv2(x) 
+        x = self.conv2(x)
         x = self.maxpool(x)
-        x = self.conv3(x) 
+        x = self.conv3(x)
         x = self.maxpool(x)
-        x = self.conv4(x) 
+        x = self.conv4(x)
         x = self.maxpool(x)
-        x = self.conv5(x) 
+        x = self.conv5(x)
         x = self.maxpool(x)
         x = self.convf(x)
+        return x
+
+    def forward(self, x):
+        x = self.forward_conv(x)
         x = torch.flatten(x, 1)
         x = self.fc(x)
         return x
