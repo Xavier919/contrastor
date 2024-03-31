@@ -45,10 +45,10 @@ if __name__ == "__main__":
     shape = vector.shape[0]
 
     train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.train_samples)
-    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=8)
+    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
 
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
     base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
     siamese_model = SiameseNetwork(base_net)
