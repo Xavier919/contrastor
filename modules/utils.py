@@ -64,11 +64,11 @@ def euclid_dis(vects):
     sum_square = torch.sum(torch.square(x - y), axis=1, keepdim=True)
     return torch.sqrt(torch.maximum(sum_square, torch.tensor(torch.finfo(float).eps).to(sum_square.device)))
 
-def contrastive_loss(y_true, y_pred, margin=1.0):
+def contrastive_loss(y_true, y_pred):
+    margin = 1.0
     square_pred = torch.square(y_pred)
-    margin_square = torch.square(torch.clamp(margin - y_pred, min=0))
-    loss = torch.mean(y_true * square_pred + (1 - y_true) * margin_square)
-    return loss
+    margin_square = torch.square(torch.maximum(margin - y_pred, torch.tensor(0.0)))
+    return torch.mean(y_true * square_pred + (1 - y_true) * margin_square)
 
 def calculate_accuracy(y_pred, y_true):
     pred_labels = (y_pred < 0.5).float()  

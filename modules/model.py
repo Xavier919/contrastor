@@ -5,37 +5,49 @@ from modules.utils import euclid_dis
 class BaseNet1D(nn.Module):
     def __init__(self, input_channels, sequence_length):
         super(BaseNet1D, self).__init__()
-        self.conv1 = nn.Conv1d(input_channels, 32, kernel_size=3, padding=1)  
-        self.avg_pool1 = nn.AvgPool1d(kernel_size=2, stride=2)
-        self.conv2 = nn.Conv1d(32, 64, kernel_size=3, padding=1)
-        self.max_pool1 = nn.MaxPool1d(kernel_size=2, stride=2)
-        self.dropout1 = nn.Dropout(0.25)
-        self.flatten = nn.Flatten()
-
-        reduced_sequence_length = sequence_length // 4  
-        fc_input_features = 64 * reduced_sequence_length
-
-        self.fc1 = nn.Linear(fc_input_features, 128) 
-        self.dropout2 = nn.Dropout(0.5)
-        self.fc2 = nn.Linear(128, 64)
-        self.dropout3 = nn.Dropout(0.5)
-        self.fc3 = nn.Linear(64, 10)
+        self.maxpool = nn.MaxPool1d(kernel_size=2)
+        self.conv1 = self.conv_block(input_channels, 64, k=5)
+        self.conv2 = self.conv_block(64, 32, k=5)
+        self.conv3 = self.conv_block(32, 16, k=5)
+        self.conv4 = self.conv_block(16, 8, k=5)
+        self.dconvf = self.final_block(8, 1)
+        self.sigmoid = nn.Sigmoid()
 
     def forward(self, x):
-        x = F.relu(self.conv1(x))
-        x = self.avg_pool1(x)
-        x = F.tanh(self.conv2(x))
-        x = self.max_pool1(x)
-        x = self.dropout1(x)
-        x = self.flatten(x)
-        x = F.tanh(self.fc1(x))
-        x = self.dropout2(x)
-        x = F.tanh(self.fc2(x))
-        x = self.dropout3(x)
-        x = self.fc3(x)
-        return x
+        block1 = self.conv1(x)
+        x = self.maxpool(block1)
+        block2 = self.conv2(x) 
+        x = self.maxpool(block2)
+        block3 = self.conv3(x) 
+        x = self.maxpool(block3)
+        block4 = self.conv4(x) 
+        x = self.maxpool(block4)
+        x = self.dconvf(x)
+        return self.sigmoid(x)
 
+    @staticmethod
+    def conv_block(in_channels, out_channels, k=5):
+        block = nn.Sequential(
+            nn.Conv1d(in_channels, in_channels, kernel_size=k, groups=in_channels, padding='same'),
+            nn.Conv1d(in_channels, out_channels, kernel_size=1, padding='same'),
+            nn.GELU(),
+            nn.BatchNorm1d(out_channels),
+            nn.Conv1d(out_channels, out_channels, kernel_size=k, groups=out_channels, padding='same'),
+            nn.Conv1d(out_channels, out_channels, kernel_size=1, padding='same'),
+            nn.GELU(),
+            nn.BatchNorm1d(out_channels),
+        )
+        return block
         
+    @staticmethod
+    def final_block(in_channels, out_channels, k=1):
+        block = nn.Sequential(
+            nn.Conv1d(in_channels, out_channels, kernel_size=k, padding='same'),
+            nn.GELU(),
+            nn.BatchNorm1d(out_channels),
+        )
+        return block
+
 class SiameseNetwork(nn.Module):
     def __init__(self, base_network):
         super(SiameseNetwork, self).__init__()
