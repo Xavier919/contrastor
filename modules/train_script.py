@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
     #siamese_model = SiameseNetwork(base_net)
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=2, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=64, num_layers=1, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
