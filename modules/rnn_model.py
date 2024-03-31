@@ -3,13 +3,14 @@ import torch.nn as nn
 import torch.nn.functional as F
 
 class BaseNetRNN(nn.Module):
-    def __init__(self, input_features=300, hidden_dim=128, num_layers=2, out_features=32):
+    def __init__(self, input_features=10000, hidden_dim=128, num_layers=2, out_features=32):
         super(BaseNetRNN, self).__init__()
         self.lstm = nn.LSTM(input_size=input_features, hidden_size=hidden_dim, num_layers=num_layers, batch_first=True)
         self.fc = nn.Linear(hidden_dim, out_features)
 
     def forward(self, x):
         lstm_out, (h_n, c_n) = self.lstm(x)
+        print(lstm_out.shape)
         last_step_output = lstm_out[:, -1, :]
         out = self.fc(last_step_output)
         return out
