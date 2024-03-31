@@ -1,6 +1,7 @@
 import torch.nn as nn
 import torch.nn.functional as F
 from modules.utils import euclid_dis
+import torch
 
 class BaseNet1D(nn.Module):
     def __init__(self, input_channels):
@@ -12,6 +13,10 @@ class BaseNet1D(nn.Module):
         self.conv4 = self.conv_block(150, 100, k=5)
         self.conv5 = self.conv_block(100, 50, k=5)
         self.convf = self.final_block(50, 1)
+        self.fc = nn.Linear(in_features=self.calculate_fc_in_features(), out_features=32)
+
+    def calculate_fc_in_features(self):
+        return 312
 
     def forward(self, x):
         x = self.conv1(x)
@@ -25,7 +30,8 @@ class BaseNet1D(nn.Module):
         x = self.conv5(x) 
         x = self.maxpool(x)
         x = self.convf(x)
-        print(x.shape)
+        x = torch.flatten(x, 1)
+        x = self.fc(x)
         return x
 
     @staticmethod
