@@ -47,7 +47,7 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
 
-    base_net = BaseNet1D(input_channels=shape)
+    base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
     siamese_model = SiameseNetwork(base_net).to(device)
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
