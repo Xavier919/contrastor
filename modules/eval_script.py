@@ -44,9 +44,9 @@ if __name__ == "__main__":
     siamese_model.eval()
     results = []
     for X_, Y_ in  list(zip(X,Y)):
-        X_, Y_ = X_.to(device), Y_.to(device)
-        X_ = text_to_word2vec(pair, word2vec_model)
-        output = siamese_model(X_)
+        X_, Y_ = X_.to(device), Y_
+        X_ = text_to_word2vec(X_, word2vec_model)
+        output = siamese_model(X_).detach()
         results.append((output, Y_))
 
     pickle.dump(results, open('results.pkl', 'wb'))
