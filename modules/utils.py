@@ -3,6 +3,10 @@ import numpy as np
 import random
 import torch
 from nltk.tokenize import word_tokenize
+from torch.utils.tensorboard import SummaryWriter
+
+writer = SummaryWriter()
+test_writer = SummaryWriter()
 
 def build_dataset(path, num_samples=-1, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")
@@ -62,7 +66,7 @@ def calculate_accuracy(y_pred, y_true):
     accuracy = correct.mean()  
     return accuracy
 
-def train_epoch(model, dataloader, optimizer, device):
+def train_epoch(model, dataloader, optimizer, device, epoch):
     model.train()
     total_loss = 0
     for (data_a, data_b), target in dataloader:
@@ -73,9 +77,10 @@ def train_epoch(model, dataloader, optimizer, device):
         loss.backward()
         optimizer.step()
         total_loss += loss.item()
+        writer.add_scalar("Loss/train", loss.item(), epoch)
     return total_loss / len(dataloader)
 
-def eval_model(model, dataloader, device):
+def eval_model(model, dataloader, device, epoch):
     model.eval()
     total_accuracy = 0
     total_samples = 0
@@ -84,6 +89,8 @@ def eval_model(model, dataloader, device):
         for (data_a, data_b), target in dataloader:
             data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
             output = model(data_a, data_b)
+            loss = contrastive_loss(target, output)
+            test_writer.add_scalar("Loss/test", loss.item(), epoch)
             accuracy_ = calculate_accuracy(output, target)
             total_accuracy += accuracy_.item() * data_a.size(0)  
             total_samples += data_a.size(0)

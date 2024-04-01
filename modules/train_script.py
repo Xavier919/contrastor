@@ -11,6 +11,7 @@ from torch.utils.data import DataLoader
 import torch.optim as optim
 from torch import optim, nn
 from torch.nn.parallel import DataParallel
+from torch.utils.tensorboard import SummaryWriter
 from modules.transformer_model import BaseNetTransformer, SiameseTransformer
 
 parser = argparse.ArgumentParser()
@@ -22,7 +23,6 @@ parser.add_argument("max_len", type=int)
 parser.add_argument("train_samples", type=int)
 parser.add_argument("test_samples", type=int)
 args = parser.parse_args()
-
 
 if __name__ == "__main__":
 
@@ -67,8 +67,8 @@ if __name__ == "__main__":
     epochs = args.epochs
     best_accuracy = 0
     for epoch in range(epochs):
-        train_loss = train_epoch(siamese_model, train_loader, optimizer, device)
-        val_accuracy = eval_model(siamese_model, train_loader, device)
+        train_loss = train_epoch(siamese_model, train_loader, optimizer, device, epoch)
+        val_accuracy = eval_model(siamese_model, train_loader, device, epoch)
         print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
         
         if val_accuracy > best_accuracy:

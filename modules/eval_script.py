@@ -45,7 +45,7 @@ if __name__ == "__main__":
     results = []
     for X_, Y_ in  list(zip(X,Y)):
         X_ = text_to_word2vec(X_, word2vec_model)
-        X_ = X_.to(device)
+        X_ = torch.tensor(X_).to(device)
         output = siamese_model(X_).detach()
         results.append((output, Y_))
 
