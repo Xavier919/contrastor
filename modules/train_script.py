@@ -73,11 +73,13 @@ if __name__ == "__main__":
         
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
-            # Save the Siamese model
+            # Adjust for nn.DataParallel wrapper
             if isinstance(siamese_model, nn.DataParallel):
                 torch.save(siamese_model.module.state_dict(), 'best_model.pth')
-                torch.save(siamese_model.module.base_net.state_dict(), 'base_net_model.pth')
+                # Correct attribute name for saving the base_network part of the model
+                torch.save(siamese_model.module.base_network.state_dict(), 'base_net_model.pth')
             else:
                 torch.save(siamese_model.state_dict(), 'best_model.pth')
-                torch.save(siamese_model.base_net.state_dict(), 'base_net_model.pth')
+                # Correct attribute name for saving the base_network part of the model
+                torch.save(siamese_model.base_network.state_dict(), 'base_net_model.pth')
             print("Model and Base Model saved as best model")
