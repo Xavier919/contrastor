@@ -32,21 +32,28 @@ if __name__ == "__main__":
     shape = vector.shape[0]
 
     base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=64, num_layers=1, out_features=32)
-    siamese_model = SiameseTransformer(base_net)
+    #siamese_model = SiameseTransformer(base_net)
 
-    model_path = "best_model.pth"
+    #model_path = "best_model.pth"
+    #checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
+    #state_dict = {key.replace("module.", ""): value for key, value in checkpoint.items()}
+    #siamese_model.load_state_dict(state_dict)
+
+    #siamese_model = siamese_model.to(device)
+
+    model_path = "base_net_model.pth"
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
     state_dict = {key.replace("module.", ""): value for key, value in checkpoint.items()}
-    siamese_model.load_state_dict(state_dict)
+    base_net.load_state_dict(state_dict)
 
-    siamese_model = siamese_model.to(device)
+    base_net = base_net.to(device)
 
-    siamese_model.eval()
+    base_net.eval()
     results = []
     for X_, Y_ in  list(zip(X,Y)):
         X_ = text_to_word2vec(X_, word2vec_model)
         X_ = torch.tensor(X_).to(device)
-        output = siamese_model(X_).detach()
+        output = base_net(X_).detach()
         results.append((output, Y_))
 
     pickle.dump(results, open('results.pkl', 'wb'))
