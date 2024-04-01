@@ -53,7 +53,7 @@ if __name__ == "__main__":
 
     #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
     #siamese_model = SiameseNetwork(base_net)
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=64, num_layers=1, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
@@ -76,10 +76,8 @@ if __name__ == "__main__":
             # Save the Siamese model
             if isinstance(siamese_model, nn.DataParallel):
                 torch.save(siamese_model.module.state_dict(), 'best_model.pth')
-                # Save the base model separately
                 torch.save(siamese_model.module.base_net.state_dict(), 'base_net_model.pth')
             else:
                 torch.save(siamese_model.state_dict(), 'best_model.pth')
-                # Save the base model separately
                 torch.save(siamese_model.base_net.state_dict(), 'base_net_model.pth')
             print("Model and Base Model saved as best model")
