@@ -73,8 +73,13 @@ if __name__ == "__main__":
         
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
+            # Save the Siamese model
             if isinstance(siamese_model, nn.DataParallel):
                 torch.save(siamese_model.module.state_dict(), 'best_model.pth')
+                # Save the base model separately
+                torch.save(siamese_model.module.base_net.state_dict(), 'base_net_model.pth')
             else:
                 torch.save(siamese_model.state_dict(), 'best_model.pth')
-            print("Model saved as best model")
+                # Save the base model separately
+                torch.save(siamese_model.base_net.state_dict(), 'base_net_model.pth')
+            print("Model and Base Model saved as best model")
