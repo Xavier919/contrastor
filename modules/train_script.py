@@ -62,8 +62,6 @@ if __name__ == "__main__":
 
     siamese_model = siamese_model.to(device)
 
-
-
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     epochs = args.epochs
