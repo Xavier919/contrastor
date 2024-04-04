@@ -56,7 +56,7 @@ if __name__ == "__main__":
     results = []
     for X_, Y_ in  list(zip(X_test,Y_test)):
         X_ = text_to_word2vec(X_, word2vec_model)
-        X_ = torch.tensor(X_).view(1,300,-1).to(device)
+        X_ = torch.tensor(X_).view(1,300,-1).float().to(device)
         output = base_net(X_).detach()
         results.append((output, Y_))
 
