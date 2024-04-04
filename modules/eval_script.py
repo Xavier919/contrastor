@@ -35,7 +35,7 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=64, num_layers=1, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32)
     #siamese_model = SiameseTransformer(base_net)
 
     #model_path = "best_model.pth"
