@@ -19,9 +19,6 @@ parser.add_argument("num_samples", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
-parser.add_argument("max_len", type=int)
-parser.add_argument("train_samples", type=int)
-parser.add_argument("test_samples", type=int)
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -41,10 +38,13 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} device")
 
-    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.train_samples)
+    num_train_samples = len(X_train)*2
+    num_test_samples = len(X_test)*2
+
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, num_train_samples)
     train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
 
-    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, num_test_samples)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
     base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32)
