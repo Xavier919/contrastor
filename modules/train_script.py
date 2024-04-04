@@ -30,8 +30,8 @@ if __name__ == "__main__":
 
     dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=True,expand=True)
 
-    X = [x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires', 'debats']]
-    Y = [x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires', 'debats']]
+    X = [x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']]
+    Y = [x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']]
 
     X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
 
@@ -41,18 +41,12 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} device")
 
-    text = "Ceci est un texte exemple"
-    vector = text_to_word2vec(text, word2vec_model)
-    shape = vector.shape[0]
-
     train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.train_samples)
-    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=8)
+    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
 
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.test_samples)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=8)
+    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
-    #base_net = BaseNet1D(input_channels=shape, sample_length=args.max_len, out_features=32)
-    #siamese_model = SiameseNetwork(base_net)
     base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
@@ -73,13 +67,10 @@ if __name__ == "__main__":
         
         if val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
-            # Adjust for nn.DataParallel wrapper
             if isinstance(siamese_model, nn.DataParallel):
                 torch.save(siamese_model.module.state_dict(), 'best_model.pth')
-                # Correct attribute name for saving the base_network part of the model
                 torch.save(siamese_model.module.base_network.state_dict(), 'base_net_model.pth')
             else:
                 torch.save(siamese_model.state_dict(), 'best_model.pth')
-                # Correct attribute name for saving the base_network part of the model
                 torch.save(siamese_model.base_network.state_dict(), 'base_net_model.pth')
             print("Model and Base Model saved as best model")

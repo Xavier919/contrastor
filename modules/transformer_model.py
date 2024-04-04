@@ -1,9 +1,8 @@
 import torch
 import torch.nn as nn
-import torch.nn.functional as F
 
 class BaseNetTransformer(nn.Module):
-    def __init__(self, embedding_dim=300, hidden_dim=128, num_layers=2, out_features=32):
+    def __init__(self, embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32):
         super(BaseNetTransformer, self).__init__()
 
         self.embedding_dim = embedding_dim
