@@ -13,6 +13,7 @@ import io
 import pickle
 from sklearn.neural_network import MLPClassifier
 from sklearn.naive_bayes import MultinomialNB
+from sklearn.model_selection import KFold
 
 writer = SummaryWriter()
 test_writer = SummaryWriter()
@@ -205,3 +206,14 @@ class CPU_Unpickler(pickle.Unpickler):
             return lambda b: torch.load(io.BytesIO(b), map_location='cpu')
         else:
             return super().find_class(module, name)
+        
+
+def get_data_splits(X, Y, split, n_splits=5, shuffle=True, random_state=None):
+    kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
+    splits = []
+    for train_index, test_index in kf.split(X):
+        X_train, X_test = X[train_index], X[test_index]
+        Y_train, Y_test = Y[train_index], Y[test_index]
+        splits.append((X_train, X_test, Y_train, Y_test))
+    X_train, X_test, Y_train, Y_test = splits[split]
+    return X_train, X_test, Y_train, Y_test

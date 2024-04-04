@@ -1,24 +1,22 @@
-from sklearn.model_selection import train_test_split
 import argparse
 import torch
 from modules.preprocess import text_edit
 from modules.utils import *
-from modules.model import BaseNet1D, SiameseNetwork
-from modules.rnn_model import BaseNetRNN, SiameseRNN
 from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
 from torch.utils.data import DataLoader
 import torch.optim as optim
 from torch import optim, nn
 from torch.nn.parallel import DataParallel
-from torch.utils.tensorboard import SummaryWriter
 from modules.transformer_model import BaseNetTransformer, SiameseTransformer
+import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
+parser.add_argument("split", type=int)
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -27,10 +25,10 @@ if __name__ == "__main__":
 
     dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=True,expand=True)
 
-    X = [x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']]
-    Y = [x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']]
+    X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
+    Y = np.array([x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
 
-    X_train, X_test, Y_train, Y_test = train_test_split(X, Y, test_size=0.2, random_state=42)
+    X_train, X_test, Y_train, Y_test = get_data_splits(X, Y, args.split, n_splits=5, shuffle=True, random_state=42)
 
     model_path = 'wiki.fr.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(model_path, binary=False)

@@ -2,6 +2,7 @@ import spacy
 import re
 import string
 import html
+from tqdm import tqdm
 nlp = spacy.load("fr_core_news_md")
 
 def expand_contractions(text):
@@ -22,7 +23,7 @@ def text_edit(dataset,grp_num=False,rm_newline=False,rm_punctuation=False,lowerc
     extended_punctuation = string.punctuation + "«»…“”–—-"
     pattern = re.compile(f"[{re.escape(extended_punctuation)}]")
 
-    for attrs in dataset.values():
+    for attrs in tqdm(dataset.values()):
         text_ = attrs["text"]
 
         if lowercase:
