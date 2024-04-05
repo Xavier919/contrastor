@@ -46,7 +46,7 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.num_pairs)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, num_heads=args.num_heads, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
