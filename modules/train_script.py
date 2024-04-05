@@ -17,6 +17,9 @@ parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
 parser.add_argument("split", type=int)
+parser.add_argument("num_pairs", type=int)
+parser.add_argument("hidden_dim", type=int)
+parser.add_argument("num_layers", type=int)
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -36,16 +39,13 @@ if __name__ == "__main__":
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} device")
 
-    num_train_samples = len(X_train)*2
-    num_test_samples = len(X_test)*2
-
-    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, num_train_samples)
+    train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.num_pairs)
     train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
 
-    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, num_test_samples)
+    test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.num_pairs)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
@@ -55,6 +55,11 @@ if __name__ == "__main__":
     siamese_model = siamese_model.to(device)
 
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
+
+    print(f'Number of pairs: {args.num_pairs}')
+    print(f'Hidden dimensions: {args.hidden_dim}')
+    print(f'Number of layers: {args.num_layers}')
+    print(f'Split: {args.split}')
 
     epochs = args.epochs
     best_accuracy = 0
