@@ -69,7 +69,7 @@ if __name__ == "__main__":
     best_accuracy = 0
     for epoch in range(epochs):
         train_loss = train_epoch(siamese_model, train_loader, optimizer, device, epoch)
-        val_accuracy = eval_model(siamese_model, train_loader, device, epoch)
+        val_accuracy = eval_model(siamese_model, test_loader, device, epoch)
         print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
         
         if val_accuracy > best_accuracy:

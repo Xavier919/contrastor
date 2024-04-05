@@ -211,10 +211,10 @@ class CPU_Unpickler(pickle.Unpickler):
 
 def get_data_splits(X, Y, split, n_splits=5, shuffle=True, random_state=None):
     kf = KFold(n_splits=n_splits, shuffle=shuffle, random_state=random_state)
-    splits = []
-    for train_index, test_index in kf.split(X):
-        X_train, X_test = X[train_index], X[test_index]
-        Y_train, Y_test = Y[train_index], Y[test_index]
-        splits.append((X_train, X_test, Y_train, Y_test))
-    X_train, X_test, Y_train, Y_test = splits[split]
+    splits = list(kf.split(X))  
+    train_index, test_index = splits[split]  
+    
+    X_train, X_test = X[train_index], X[test_index]
+    Y_train, Y_test = Y[train_index], Y[test_index]
+    
     return X_train, X_test, Y_train, Y_test
