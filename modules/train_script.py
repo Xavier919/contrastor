@@ -16,10 +16,11 @@ parser.add_argument("num_samples", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
-parser.add_argument("split", type=int)
 parser.add_argument("num_pairs", type=int)
 parser.add_argument("hidden_dim", type=int)
 parser.add_argument("num_layers", type=int)
+parser.add_argument("num_heads", type=int)
+parser.add_argument("split", type=int)
 args = parser.parse_args()
 
 if __name__ == "__main__":
@@ -45,7 +46,7 @@ if __name__ == "__main__":
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.num_pairs)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, num_heads=args.num_heads, out_features=32)
     siamese_model = SiameseTransformer(base_net)
 
     if torch.cuda.device_count() > 1:
@@ -59,6 +60,7 @@ if __name__ == "__main__":
     print(f'Number of pairs: {args.num_pairs}')
     print(f'Hidden dimensions: {args.hidden_dim}')
     print(f'Number of layers: {args.num_layers}')
+    print(f'Number of heads: {args.num_heads}')
     print(f'Split: {args.split}')
 
     epochs = args.epochs

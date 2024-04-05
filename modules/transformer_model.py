@@ -2,11 +2,11 @@ import torch
 import torch.nn as nn
 
 class BaseNetTransformer(nn.Module):
-    def __init__(self, embedding_dim=300, hidden_dim=128, num_layers=1, out_features=32):
+    def __init__(self, embedding_dim=300, hidden_dim=128, num_layers=1, n_heads=1, out_features=32):
         super(BaseNetTransformer, self).__init__()
 
         self.embedding_dim = embedding_dim
-        encoder_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=1, dim_feedforward=hidden_dim, batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=n_heads, dim_feedforward=hidden_dim, batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         self.fc = nn.Linear(embedding_dim, out_features)
