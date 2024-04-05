@@ -58,6 +58,8 @@ if __name__ == "__main__":
     optimizer = optim.RMSprop(siamese_model.parameters(), lr=args.lr)
 
     print(f'Number of pairs: {args.num_pairs}')
+    print(f'Batch_size: {args.batch_size}')
+    print(f'Epochs: {args.epochs}')
     print(f'Hidden dimensions: {args.hidden_dim}')
     print(f'Number of layers: {args.num_layers}')
     print(f'Number of heads: {args.num_heads}')
