@@ -84,7 +84,7 @@ def calculate_accuracy(y_pred, y_true):
 def train_epoch(model, dataloader, optimizer, device, epoch):
     model.train()
     total_loss = 0
-    for (data_a, data_b), target in tqdm(dataloader):
+    for (data_a, data_b), target in dataloader:
         data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
         optimizer.zero_grad()
         output = model(data_a, data_b)  

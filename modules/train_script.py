@@ -80,7 +80,8 @@ if __name__ == "__main__":
         test_sampler.set_epoch(epoch)
         train_loss = train_epoch(siamese_model, train_loader, optimizer, device, epoch)
         val_accuracy = eval_model(siamese_model, test_loader, device, epoch)
-        print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
+        if dist.get_rank() == 0:
+            print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
 
         if rank == 0 and val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
