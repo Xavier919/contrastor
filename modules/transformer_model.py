@@ -6,7 +6,7 @@ class BaseNetTransformer(nn.Module):
         super(BaseNetTransformer, self).__init__()
 
         self.embedding_dim = embedding_dim
-        encoder_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=n_heads, dim_feedforward=hidden_dim, activation='gelu', batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=n_heads, dim_feedforward=hidden_dim, activation='relu', batch_first=True)
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
         self.fc = nn.Linear(embedding_dim, out_features)
