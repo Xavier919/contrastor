@@ -4,12 +4,14 @@ from modules.preprocess import text_edit
 from modules.utils import *
 from gensim.models import KeyedVectors
 from modules.dataloader import PairedWord2VecDataset
-from torch.utils.data import DataLoader
+from torch.utils.data import DataLoader, DistributedSampler
 import torch.optim as optim
 from torch import optim, nn
-from torch.nn.parallel import DataParallel
+from torch.nn.parallel import DistributedDataParallel as DDP
+import torch.distributed as dist
 from modules.transformer_model import BaseNetTransformer, SiameseTransformer
 import numpy as np
+import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -23,7 +25,24 @@ parser.add_argument("num_heads", type=int)
 parser.add_argument("split", type=int)
 args = parser.parse_args()
 
+
+def setup(rank, world_size):
+    os.environ['MASTER_ADDR'] = 'localhost'
+    os.environ['MASTER_PORT'] = '12355'
+    dist.init_process_group("nccl", rank=rank, world_size=world_size)
+    torch.cuda.set_device(rank)
+
+def cleanup():
+    dist.destroy_process_group()
+
+
 if __name__ == "__main__":
+
+    world_size = torch.cuda.device_count()  
+    rank = int(os.getenv('OMPI_COMM_WORLD_RANK', '0'))
+    setup(rank, world_size)
+
+
 
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
@@ -41,13 +60,21 @@ if __name__ == "__main__":
     print(f"Using {device} device")
 
     train_dataset = PairedWord2VecDataset(X_train, Y_train, text_to_word2vec, word2vec_model, args.num_pairs)
-    train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
+    train_sampler = DistributedSampler(train_dataset, num_replicas=world_size, rank=rank, shuffle=True)
+    train_loader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=16)
+    #train_loader = DataLoader(train_dataset, args.batch_size, shuffle=True, num_workers=16)
+
 
     test_dataset = PairedWord2VecDataset(X_test, Y_test, text_to_word2vec, word2vec_model, args.num_pairs)
-    test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
+    test_sampler = DistributedSampler(test_dataset, num_replicas=world_size, rank=rank, shuffle=False)
+    test_loader = DataLoader(train_dataset, batch_size=args.batch_size, sampler=train_sampler, num_workers=16)
+    #test_loader = DataLoader(test_dataset, batch_size=args.batch_size, num_workers=16)
+
 
     base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32)
-    siamese_model = SiameseTransformer(base_net)
+    #siamese_model = SiameseTransformer(base_net)
+    siamese_model = SiameseTransformer(base_net).to(rank)
+    siamese_model = DDP(siamese_model, device_ids=[rank])
 
     if torch.cuda.device_count() > 1:
         print(f"Let's use {torch.cuda.device_count()} GPUs!")
@@ -68,11 +95,13 @@ if __name__ == "__main__":
     epochs = args.epochs
     best_accuracy = 0
     for epoch in range(epochs):
+        DistributedSampler.set_epoch(epoch)
         train_loss = train_epoch(siamese_model, train_loader, optimizer, device, epoch)
         val_accuracy = eval_model(siamese_model, test_loader, device, epoch)
         print(f"Epoch {epoch}, Train Loss: {train_loss}, Validation Accuracy: {val_accuracy}")
         
-        if val_accuracy > best_accuracy:
+        #if val_accuracy > best_accuracy:
+        if rank == 0 and val_accuracy > best_accuracy:
             best_accuracy = val_accuracy
             if isinstance(siamese_model, nn.DataParallel):
                 torch.save(siamese_model.module.state_dict(), f'best_model_{args.split}.pth')
@@ -81,3 +110,5 @@ if __name__ == "__main__":
                 torch.save(siamese_model.state_dict(), f'best_model_{args.split}.pth')
                 torch.save(siamese_model.base_network.state_dict(), f'base_net_model_{args.split}.pth')
             print("Model and Base Model saved as best model")
+
+    cleanup()
