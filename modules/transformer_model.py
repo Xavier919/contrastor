@@ -44,7 +44,7 @@ class BaseNetTransformer(nn.Module):
             d_model=embedding_dim,
             nhead=n_heads,
             dim_feedforward=hidden_dim,
-            activation='relu',
+            activation='gelu',
             batch_first=True
         )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
