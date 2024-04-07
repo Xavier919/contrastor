@@ -38,49 +38,48 @@ class BaseNetTransformer(nn.Module):
         self.embedding_dim = embedding_dim
         self.max_seq_length = max_seq_length
         
-        # Define the positional encoding matrix
-        self.positional_encoding = nn.Parameter(self.create_positional_encoding(max_seq_length, embedding_dim), requires_grad=False)
+        self.positional_encoding = self.create_positional_encoding(max_seq_length, embedding_dim)
         
-        # Transformer Encoder Layer
-        encoder_layer = nn.TransformerEncoderLayer(d_model=embedding_dim, nhead=n_heads, dim_feedforward=hidden_dim, activation='relu', batch_first=True)
+        encoder_layer = nn.TransformerEncoderLayer(
+            d_model=embedding_dim,
+            nhead=n_heads,
+            dim_feedforward=hidden_dim,
+            activation='relu',
+            batch_first=True
+        )
         self.transformer_encoder = nn.TransformerEncoder(encoder_layer, num_layers=num_layers)
 
-        # Fully connected layer for output
         self.fc = nn.Linear(embedding_dim, out_features)
 
     def forward(self, x):
         seq_length = x.size(1)
+        
+        if seq_length > self.max_seq_length:
+            raise ValueError(f"The sequence length ({seq_length}) exceeds the maximum allowed length ({self.max_seq_length}).")
 
-        # Add positional encoding to input feature x
-        # Assuming that x is batch_first ([batch_size, seq_length, embedding_dim])
-        positional_encoding = self.positional_encoding[:seq_length, :]
+        positional_encoding = self.positional_encoding[:seq_length, :].to(x.device)
         x = x + positional_encoding
 
-        x = x.transpose(1, 2)  # Change to [batch_size, embedding_dim, seq_length] if necessary
         transformer_out = self.transformer_encoder(x)
         
-        out = transformer_out.mean(dim=2)  # Taking mean over the sequence length
+        out = transformer_out.mean(dim=1)
+        
         out = self.fc(out)
         
         return out
     
     def create_positional_encoding(self, max_seq_length, embedding_dim):
-        """Create the positional encoding matrix."""
-        # Create a matrix of [max_seq_length, embedding_dim] representing the positional encoding for max_seq_length positions
         positional_encoding = torch.zeros(max_seq_length, embedding_dim)
         
-        # Calculate the positional encoding values
         for pos in range(max_seq_length):
             for i in range(0, embedding_dim, 2):
                 positional_encoding[pos, i] = math.sin(pos / (10000 ** ((2 * i)/embedding_dim)))
-                positional_encoding[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1))/embedding_dim)))
-        
-        # Add a batch dimension with a size of 1 at the beginning
+                if (i + 1) < embedding_dim:
+                    positional_encoding[pos, i + 1] = math.cos(pos / (10000 ** ((2 * (i + 1))/embedding_dim)))
+
         positional_encoding = positional_encoding.unsqueeze(0)
         return positional_encoding
-
-
-
+    
 class SiameseTransformer(nn.Module):
     def __init__(self, base_network):
         super(SiameseTransformer, self).__init__()
