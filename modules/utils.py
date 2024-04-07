@@ -113,7 +113,7 @@ def train_epoch(model, dataloader, optimizer, device, epoch):
     for (data_a, data_b), target in tqdm(dataloader):
         data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
         batch_size = len(data_a)
-        data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
+        #data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
         optimizer.zero_grad()
         output = model(data_a, data_b)  
         loss = contrastive_loss(target, output)
@@ -132,7 +132,7 @@ def eval_model(model, dataloader, device, epoch):
         for (data_a, data_b), target in dataloader:
             batch_size = len(data_a)
             data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
-            data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
+            #data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
             output = model(data_a, data_b)
             loss = contrastive_loss(target, output)
             test_writer.add_scalar("Loss/test", loss.item(), epoch)
