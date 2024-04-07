@@ -86,6 +86,8 @@ def train_epoch(model, dataloader, optimizer, device, epoch):
     total_loss = 0
     for (data_a, data_b), target in dataloader:
         data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
+        batch_size = len(data_a)
+        data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
         optimizer.zero_grad()
         output = model(data_a, data_b)  
         loss = contrastive_loss(target, output)
