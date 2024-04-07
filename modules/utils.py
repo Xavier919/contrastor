@@ -21,7 +21,7 @@ test_writer = SummaryWriter()
 
 import pandas as pd
 
-def build_dataset(path, num_samples=-1, min_len=5000, rnd_state=42):
+def build_dataset(path, num_samples=-1, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")
     df2 = pd.read_json(path + "/janvier.json")
     df3 = pd.read_json(path + "/mars.json")
@@ -32,7 +32,6 @@ def build_dataset(path, num_samples=-1, min_len=5000, rnd_state=42):
     df8 = pd.read_json(path + "/octobre.json")
     df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8], ignore_index=True)
     df = df.dropna(subset=['text'])
-    df = df[df['text'].str.len() >= min_len]
     df['section_label'], _ = pd.factorize(df['section_1'])
     if num_samples != -1:
         df = df.sample(n=min(len(df), num_samples), replace=False, random_state=rnd_state)
