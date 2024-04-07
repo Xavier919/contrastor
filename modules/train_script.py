@@ -14,6 +14,7 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
+parser.add_argument("max_length", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)
@@ -58,7 +59,7 @@ if __name__ == "__main__":
     test_sampler = DistributedSampler(test_dataset, num_replicas=world_size, rank=rank, shuffle=False)
     test_loader = DataLoader(test_dataset, batch_size=args.batch_size, sampler=test_sampler, num_workers=8)
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32, max_seq_length=args.max_length)
     siamese_model = SiameseTransformer(base_net).to(rank)
     siamese_model = DDP(siamese_model, device_ids=[rank])
 
