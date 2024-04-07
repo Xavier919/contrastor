@@ -19,7 +19,9 @@ from tqdm import tqdm
 writer = SummaryWriter()
 test_writer = SummaryWriter()
 
-def build_dataset(path, num_samples=-1, rnd_state=42):
+import pandas as pd
+
+def build_dataset(path, num_samples=-1, min_len=5000, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")
     df2 = pd.read_json(path + "/janvier.json")
     df3 = pd.read_json(path + "/mars.json")
@@ -28,12 +30,14 @@ def build_dataset(path, num_samples=-1, rnd_state=42):
     df6 = pd.read_json(path + "/aout.json")
     df7 = pd.read_json(path + "/septembre.json")
     df8 = pd.read_json(path + "/octobre.json")
-    df = pd.concat([df1,df2,df3,df4,df5,df6,df7,df8], ignore_index=True)
-    df = df.dropna(subset=['text'])    
+    df = pd.concat([df1, df2, df3, df4, df5, df6, df7, df8], ignore_index=True)
+    df = df.dropna(subset=['text'])
+    df = df[df['text'].str.len() >= min_len]
     df['section_label'], _ = pd.factorize(df['section_1'])
     if num_samples != -1:
         df = df.sample(n=min(len(df), num_samples), replace=False, random_state=rnd_state)
     return df.T.to_dict()
+
 
 def preprocess_text(text, language="french"):
     return word_tokenize(text.lower(), language=language)
@@ -61,6 +65,29 @@ def text_to_word2vec(text, model, max_len=5000):
             padded_array = stacked_vectors
     
     return padded_array
+
+def text_to_word2vec(text, model, max_len=5000):
+    words = preprocess_text(text)
+    vectors = [model[word] for word in words if word in model]
+    
+    if len(vectors) == 0:
+        padded_array = np.zeros((model.vector_size, max_len))
+    else:
+        stacked_vectors = np.stack(vectors).T
+        
+        if stacked_vectors.shape[1] < max_len:
+            total_padding = max_len - stacked_vectors.shape[1]
+            padding_before = total_padding // 2
+            padding_after = total_padding - padding_before
+            padded_array = np.pad(stacked_vectors, ((0, 0), (padding_before, padding_after)), 'constant')
+        elif stacked_vectors.shape[1] > max_len:
+            padded_array = stacked_vectors[:, :max_len]
+        else:
+            padded_array = stacked_vectors
+    
+    return padded_array
+
+
 
 def euclid_dis(vects):
     x, y = vects
