@@ -70,6 +70,7 @@ if __name__ == "__main__":
         print(f"Number of pairs: {args.num_pairs}")
         print(f"Batch_size: {args.batch_size}")
         print(f"Learning rate: {args.lr}")
+        print(f"Dropout: {args.dropout}")
         print(f"Epochs: {args.epochs}")
         print(f"Hidden dimensions: {args.hidden_dim}")
         print(f"Number of layers: {args.num_layers}")
