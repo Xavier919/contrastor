@@ -10,7 +10,6 @@ import numpy as np
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
-parser.add_argument("max_length", type=int)
 parser.add_argument("hidden_dim", type=int)
 parser.add_argument("num_layers", type=int)
 parser.add_argument("num_heads", type=int)
@@ -22,7 +21,7 @@ if __name__ == "__main__":
 
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
-    dataset = text_edit(dataset,grp_num=False,rm_newline=True,rm_punctuation=True,lowercase=True,lemmatize=False,html_=True,expand=True)
+    dataset = text_edit(dataset,grp_num=False, rm_newline=True, rm_punctuation=True, lowercase=True, lemmatize=False, html_=True, expand=False)
 
     X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
     Y = np.array([x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
@@ -39,7 +38,7 @@ if __name__ == "__main__":
     vector = text_to_word2vec(text, word2vec_model)
     shape = vector.shape[0]
 
-    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32, max_seq_length=512)
+    base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32)
 
     model_path = f"base_net_model_{args.split}.pth"
     checkpoint = torch.load(model_path, map_location=lambda storage, loc: storage)
