@@ -26,7 +26,7 @@ if __name__ == "__main__":
     X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
     Y = np.array([x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
 
-    #X_train, X_test, Y_train, Y_test = get_data_splits(X, Y, args.split, n_splits=5, shuffle=True, random_state=42)
+    X_train, X_test, Y_train, Y_test = get_data_splits(X, Y, args.split, n_splits=5, shuffle=True, random_state=42)
 
     model_path = 'wiki.fr.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(model_path, binary=False)
@@ -45,7 +45,7 @@ if __name__ == "__main__":
 
     base_net.eval()
     results = []
-    for X_, Y_ in  list(zip(X,Y)):
+    for X_, Y_ in  list(zip(X_test,Y_test)):
         X_ = text_to_word2vec(X_, word2vec_model)
         X_ = torch.tensor(X_).view(1,300,-1).float().to(device)
         output = base_net(X_).detach()
