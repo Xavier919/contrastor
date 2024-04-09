@@ -26,17 +26,13 @@ if __name__ == "__main__":
     X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
     Y = np.array([x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
 
-    X_train, X_test, Y_train, Y_test = get_data_splits(X, Y, args.split, n_splits=5, shuffle=True, random_state=42)
+    #X_train, X_test, Y_train, Y_test = get_data_splits(X, Y, args.split, n_splits=5, shuffle=True, random_state=42)
 
     model_path = 'wiki.fr.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(model_path, binary=False)
 
     device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     print(f"Using {device} device")
-
-    text = "Ceci est un texte exemple"
-    vector = text_to_word2vec(text, word2vec_model)
-    shape = vector.shape[0]
 
     base_net = BaseNetTransformer(embedding_dim=300, hidden_dim=args.hidden_dim, num_layers=args.num_layers, n_heads=args.num_heads, out_features=32)
 
@@ -49,7 +45,7 @@ if __name__ == "__main__":
 
     base_net.eval()
     results = []
-    for X_, Y_ in  list(zip(X_test,Y_test)):
+    for X_, Y_ in  list(zip(X,Y)):
         X_ = text_to_word2vec(X_, word2vec_model)
         X_ = torch.tensor(X_).view(1,300,-1).float().to(device)
         output = base_net(X_).detach()
