@@ -3,8 +3,7 @@ import torch
 from modules.preprocess import text_edit
 from modules.utils import *
 from gensim.models import KeyedVectors
-from modules.dataloader import PairedWord2VecDataset
-from modules.transformer_model import BaseNetTransformer, SiameseTransformer
+from modules.transformer_model import BaseNetTransformer
 import pickle
 import numpy as np
 
@@ -21,7 +20,7 @@ if __name__ == "__main__":
 
     dataset = build_dataset(path="siamese_net/data",num_samples=args.num_samples, rnd_state=10)
 
-    dataset = text_edit(dataset,grp_num=False, rm_newline=True, rm_punctuation=True, lowercase=True, lemmatize=False, html_=True, expand=False)
+    dataset = text_edit(dataset, grp_num=False, rm_newline=True, rm_punctuation=True, lowercase=True, lemmatize=False, html_=True, expand=False)
 
     X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
     Y = np.array([x['section_label'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])

@@ -19,8 +19,6 @@ from tqdm import tqdm
 writer = SummaryWriter()
 test_writer = SummaryWriter()
 
-import pandas as pd
-
 def build_dataset(path, num_samples=-1, rnd_state=42):
     df1 = pd.read_json(path + "/fevrier.json")
     df2 = pd.read_json(path + "/janvier.json")
@@ -39,31 +37,7 @@ def build_dataset(path, num_samples=-1, rnd_state=42):
 
 
 def preprocess_text(text, language="french"):
-    return word_tokenize(text.lower(), language=language)
-
-def text_to_word2vec(text, model, max_len=5000):
-    words = preprocess_text(text)
-    vectors = [model[word] for word in words if word in model]
-    
-    if len(vectors) == 0:
-        padded_array = np.zeros((model.vector_size, max_len))
-    else:
-        stacked_vectors = np.stack(vectors).T
-        
-        if stacked_vectors.shape[1] < max_len:
-            total_padding = max_len - stacked_vectors.shape[1]
-            padding_before = total_padding // 2
-            padding_after = total_padding - padding_before
-            padded_array = np.pad(stacked_vectors, ((0, 0), (padding_before, padding_after)), 'constant')
-        elif stacked_vectors.shape[1] > max_len:
-            excess_length = stacked_vectors.shape[1] - max_len
-            trim_before = excess_length // 2
-            trim_after = excess_length - trim_before
-            padded_array = stacked_vectors[:, trim_before:-trim_after]
-        else:
-            padded_array = stacked_vectors
-    
-    return padded_array
+    return word_tokenize(text, language=language)
 
 def text_to_word2vec(text, model, max_len=5000):
     words = preprocess_text(text)
@@ -112,8 +86,6 @@ def train_epoch(model, dataloader, optimizer, device, epoch):
     total_loss = 0
     for (data_a, data_b), target in tqdm(dataloader):
         data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
-        batch_size = len(data_a)
-        #data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
         optimizer.zero_grad()
         output = model(data_a, data_b)  
         loss = contrastive_loss(target, output)
@@ -130,9 +102,7 @@ def eval_model(model, dataloader, device, epoch):
 
     with torch.no_grad():
         for (data_a, data_b), target in dataloader:
-            batch_size = len(data_a)
             data_a, data_b, target = data_a.to(device), data_b.to(device), target.to(device)
-            #data_a, data_b = data_a.view(batch_size,-1,300), data_b.view(batch_size,-1,300)
             output = model(data_a, data_b)
             loss = contrastive_loss(target, output)
             test_writer.add_scalar("Loss/test", loss.item(), epoch)
