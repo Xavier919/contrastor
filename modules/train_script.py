@@ -14,7 +14,6 @@ import os
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
-parser.add_argument("max_length", type=int)
 parser.add_argument("batch_size", type=int)
 parser.add_argument("epochs", type=int)
 parser.add_argument("lr", type=float)

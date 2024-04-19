@@ -35,7 +35,6 @@ def build_dataset(path, num_samples=-1, rnd_state=42):
         df = df.sample(n=min(len(df), num_samples), replace=False, random_state=rnd_state)
     return df.T.to_dict()
 
-
 def preprocess_text(text, language="french"):
     return word_tokenize(text, language=language)
 
@@ -59,8 +58,6 @@ def text_to_word2vec(text, model, max_len=5000):
             padded_array = stacked_vectors
     
     return padded_array
-
-
 
 def euclid_dis(vects):
     x, y = vects
