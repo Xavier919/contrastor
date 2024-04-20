@@ -12,6 +12,7 @@ import argparse
 from torch.nn.parallel import DistributedDataParallel as DDP
 import torch.distributed as dist
 import os
+from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser()
 parser.add_argument("num_samples", type=int)
@@ -41,6 +42,9 @@ def setup(rank, world_size):
 
 def cleanup():
     dist.destroy_process_group()
+
+writer = SummaryWriter()
+test_writer = SummaryWriter()
 
 if __name__ == "__main__":
     world_size = torch.cuda.device_count()  
@@ -86,6 +90,7 @@ if __name__ == "__main__":
             loss.backward()
             optimizer.step()
             total_loss += loss.item()
+            writer.add_scalar("Loss/train", loss.item(), epoch)
         if dist.get_rank() == 0:
             print(f'Epoch {epoch+1}, Train loss: {total_loss / len(train_dataloader)}')
 
@@ -95,6 +100,7 @@ if __name__ == "__main__":
             outputs = model(X)
             loss = criterion(outputs, Y)
             total_loss += loss.item()
+            test_writer.add_scalar("Loss/test", loss.item(), epoch)
         if dist.get_rank() == 0:
             print(f'Epoch {epoch+1}, Test loss: {total_loss / len(test_dataloader)}')
 
