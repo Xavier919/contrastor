@@ -21,16 +21,17 @@ args = parser.parse_args()
 
 class CustomDataset(Dataset):
     def __init__(self, X, Y, word2vec_model):
-        word2vec_arrays = [text_to_word2vec(x, word2vec_model) for x in X]
-        combined_array = np.array(word2vec_arrays)  # Combining into one numpy array
-        self.X = torch.tensor(combined_array, dtype=torch.float32)  # More efficient tensor creation
-        self.Y = torch.tensor(Y, dtype=torch.long)
+        self.X = X  
+        self.Y = torch.tensor(Y, dtype=torch.long)  
+        self.word2vec_model = word2vec_model  
 
     def __len__(self):
         return len(self.X)
 
     def __getitem__(self, idx):
-        return self.X[idx], self.Y[idx]
+        word2vec_array = text_to_word2vec(self.X[idx], self.word2vec_model)
+        x_tensor = torch.tensor(word2vec_array, dtype=torch.float32)
+        return x_tensor, self.Y[idx]
 
 writer = SummaryWriter()
 test_writer = SummaryWriter()
