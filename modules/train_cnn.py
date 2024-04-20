@@ -70,7 +70,7 @@ if __name__ == "__main__":
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
     model = CNN_NLP().to(rank)
-    siamese_model = DDP(model, device_ids=[rank])
+    model = DDP(model, device_ids=[rank])
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
