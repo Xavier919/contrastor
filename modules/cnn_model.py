@@ -20,7 +20,6 @@ class CNN_NLP(nn.Module):
         ])
         self.fc = nn.Linear(np.sum(num_filters), num_classes)
         self.dropout = nn.Dropout(p=dropout)
-        self.softmax = nn.Softmax(dim=1)
     def forward(self, x):
         x_reshaped = x.permute(0, 2, 1)
         x_conv_list = [F.relu(conv1d(x_reshaped)) for conv1d in self.conv1d_list]
@@ -29,4 +28,4 @@ class CNN_NLP(nn.Module):
         x_fc = torch.cat([x_pool.squeeze(dim=2) for x_pool in x_pool_list],
                          dim=1)
         logits = self.fc(self.dropout(x_fc))
-        return self.softmax(logits)
+        return logits
