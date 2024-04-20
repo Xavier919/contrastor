@@ -93,5 +93,5 @@ if __name__ == "__main__":
 
         if best_loss > (test_losses / len(test_dataloader)):
             best_loss = test_losses/len(test_dataloader)
-            torch.save(model.module.state_dict(), f'best_cnn_{args.split}.pth')
+            torch.save(model.state_dict(), f'best_cnn_{args.split}.pth')
             print("Model saved as best model")
