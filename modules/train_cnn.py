@@ -51,7 +51,7 @@ if __name__ == "__main__":
     rank = int(os.getenv('OMPI_COMM_WORLD_RANK', '0'))
     setup(rank, world_size)
 
-    dataset = build_dataset(path="data", num_samples=args.num_samples, rnd_state=10)
+    dataset = build_dataset(path="siamese_net/data", num_samples=args.num_samples, rnd_state=10)
     dataset = text_edit(dataset, grp_num=False, rm_newline=True, rm_punctuation=True, lowercase=True, lemmatize=False, html_=True, expand=False)
 
     X = np.array([x['text'] for x in dataset.values() if x['section_1'] in ['actualites', 'sports', 'international', 'arts', 'affaires']])
