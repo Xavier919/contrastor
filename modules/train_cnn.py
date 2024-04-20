@@ -62,12 +62,16 @@ if __name__ == "__main__":
     model_path = 'wiki.fr.vec'
     word2vec_model = KeyedVectors.load_word2vec_format(model_path, binary=False)
 
+    device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+
     train_dataset = CustomDataset(X_train, Y_train, word2vec_model)
     train_dataloader = DataLoader(train_dataset, batch_size=args.batch_size, shuffle=True)
     test_dataset = CustomDataset(X_test, Y_test, word2vec_model)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
-    model = CNN_NLP()
+    model = CNN_NLP().to(rank)
+    siamese_model = DDP(model, device_ids=[rank])
+
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
