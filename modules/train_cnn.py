@@ -9,9 +9,6 @@ from torch.utils.data import Dataset, DataLoader
 import torch.optim as optim
 from modules.cnn_model import CNN_NLP
 import argparse
-from torch.nn.parallel import DistributedDataParallel as DDP
-import torch.distributed as dist
-import os
 from torch.utils.tensorboard import SummaryWriter
 
 parser = argparse.ArgumentParser()
@@ -33,23 +30,10 @@ class CustomDataset(Dataset):
     def __getitem__(self, idx):
         return self.X[idx], self.Y[idx]
 
-
-def setup(rank, world_size):
-    os.environ['MASTER_ADDR'] = 'localhost'
-    os.environ['MASTER_PORT'] = '12355'
-    dist.init_process_group("nccl", rank=rank, world_size=world_size)
-    torch.cuda.set_device(rank)
-
-def cleanup():
-    dist.destroy_process_group()
-
 writer = SummaryWriter()
 test_writer = SummaryWriter()
 
 if __name__ == "__main__":
-    world_size = torch.cuda.device_count()  
-    rank = int(os.getenv('OMPI_COMM_WORLD_RANK', '0'))
-    setup(rank, world_size)
 
     dataset = build_dataset(path="siamese_net/data", num_samples=args.num_samples, rnd_state=10)
     dataset = text_edit(dataset, grp_num=False, rm_newline=True, rm_punctuation=True, lowercase=True, lemmatize=False, html_=True, expand=False)
@@ -69,23 +53,21 @@ if __name__ == "__main__":
     test_dataset = CustomDataset(X_test, Y_test, word2vec_model)
     test_dataloader = DataLoader(test_dataset, batch_size=args.batch_size, shuffle=False)
 
-    model = CNN_NLP().to(rank)
-    model = DDP(model, device_ids=[rank])
+    model = CNN_NLP().to(device)
 
     criterion = nn.CrossEntropyLoss()
     optimizer = optim.Adam(model.parameters(), lr=args.lr)
 
-    if dist.get_rank() == 0:
-        print(f"Batch_size: {args.batch_size}")
-        print(f"Learning rate: {args.lr}")
-        print(f"Epochs: {args.epochs}")
-        print(f"Split: {args.split}")
+    print(f"Batch_size: {args.batch_size}")
+    print(f"Learning rate: {args.lr}")
+    print(f"Epochs: {args.epochs}")
+    print(f"Split: {args.split}")
 
     num_epochs = args.epochs
     best_loss = 10
     for epoch in range(num_epochs):
         model.train()
-        total_loss = 0
+        train_losses = 0
         for X, Y in train_dataloader:
             X = X.view(len(X), 5000, 300).to(device)
             Y = Y.to(device)
@@ -94,24 +76,23 @@ if __name__ == "__main__":
             loss = criterion(outputs, Y)
             loss.backward()
             optimizer.step()
-            total_loss += loss.item()
+            train_losses += loss.item()
             writer.add_scalar("Loss/train", loss.item(), epoch)
-        if dist.get_rank() == 0:
-            print(f'Epoch {epoch+1}, Train loss: {total_loss / len(train_dataloader)}')
+        print(f'Epoch {epoch+1}, Train loss: {train_losses / len(train_dataloader)}')
 
         model.eval()
+        test_losses = 0
         for X, Y in test_dataloader:
             X = X.view(len(X), 5000, 300).to(device)
             Y = Y.to(device)
             outputs = model(X)
             loss = criterion(outputs, Y)
-            total_loss += loss.item()
+            test_losses += loss.item()
             test_writer.add_scalar("Loss/test", loss.item(), epoch)
-        if dist.get_rank() == 0:
-            print(f'Epoch {epoch+1}, Test loss: {total_loss / len(test_dataloader)}')
+        print(f'Epoch {epoch+1}, Test loss: {test_losses / len(test_dataloader)}')
 
-        if rank == 0 and best_loss > (total_loss / len(test_dataloader)):
-            best_loss = total_loss/len(test_dataloader)
+        if best_loss > (test_losses / len(test_dataloader)):
+            best_loss = test_losses/len(test_dataloader)
             torch.save(model.module.state_dict(), f'best_cnn_{args.split}.pth')
             print("Model saved as best model")
 
