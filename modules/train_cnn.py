@@ -80,6 +80,7 @@ if __name__ == "__main__":
             optimizer.step()
             train_losses += loss.item()
             writer.add_scalar("Loss/train", loss.item(), epoch)
+            torch.cuda.empty_cache()
         print(f'Epoch {epoch+1}, Train loss: {train_losses / len(train_dataloader)}')
 
         model.eval()
@@ -91,6 +92,7 @@ if __name__ == "__main__":
             loss = criterion(outputs, Y)
             test_losses += loss.item()
             test_writer.add_scalar("Loss/test", loss.item(), epoch)
+            torch.cuda.empty_cache()
         print(f'Epoch {epoch+1}, Test loss: {test_losses / len(test_dataloader)}')
 
         if best_loss > (test_losses / len(test_dataloader)):
