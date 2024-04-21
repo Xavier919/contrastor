@@ -64,7 +64,7 @@ if __name__ == "__main__":
     model.eval()
     for X, Y in test_dataloader:
         X = X.view(len(X), 5000, 300).to(device)
-        outputs = model(X).detach()
-        results.append((outputs, Y))
+        output = np.argmax(model(X).view(-1).detach())
+        results.append((output, Y))
 
     pickle.dump(results, open(f'results_cnn_{args.split}.pkl', 'wb'))
