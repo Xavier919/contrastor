@@ -72,7 +72,7 @@ if __name__ == "__main__":
         model.train()
         train_losses = 0
         for X, Y in train_dataloader:
-            X = X.view(len(X), 5000, 300).to(device)
+            X = X.view(len(X), 10000, 300).to(device)
             Y = Y.to(device)
             optimizer.zero_grad()
             outputs = model(X)
@@ -87,7 +87,7 @@ if __name__ == "__main__":
         model.eval()
         test_losses = 0
         for X, Y in test_dataloader:
-            X = X.view(len(X), 5000, 300).to(device)
+            X = X.view(len(X), 10000, 300).to(device)
             Y = Y.to(device)
             outputs = model(X)
             loss = criterion(outputs, Y)

@@ -64,8 +64,8 @@ if __name__ == "__main__":
     results = []
     model.eval()
     for X, Y in test_dataloader:
-        X = X.view(len(X), 5000, 300).to(device)
-        output = model(X).view(-1)
+        X = X.view(len(X), 10000, 300).to(device)
+        output = model(X)
         output = np.argmax(softmax(output).cpu().detach())
         results.append((output.numpy(), Y.numpy()))
 

@@ -38,7 +38,7 @@ def build_dataset(path, num_samples=-1, rnd_state=42):
 def preprocess_text(text, language="french"):
     return word_tokenize(text, language=language)
 
-def text_to_word2vec(text, model, max_len=5000):
+def text_to_word2vec(text, model, max_len=10000):
     words = preprocess_text(text)
     vectors = [model[word] for word in words if word in model]
     
