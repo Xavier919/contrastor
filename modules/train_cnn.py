@@ -59,7 +59,7 @@ if __name__ == "__main__":
     model = CNN_NLP().to(device)
 
     criterion = nn.CrossEntropyLoss()
-    optimizer = optim.Adam(model.parameters(), lr=args.lr)
+    optimizer = optim.Adadelta(model.parameters(), lr=args.lr, rho=0.95)
 
     print(f"Batch_size: {args.batch_size}")
     print(f"Learning rate: {args.lr}")

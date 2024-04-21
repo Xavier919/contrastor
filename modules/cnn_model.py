@@ -9,7 +9,7 @@ class CNN_NLP(nn.Module):
                  filter_sizes=[3, 4, 5],
                  num_filters=[100, 100, 100],
                  num_classes=5,
-                 dropout=0.2):
+                 dropout=0.5):
 
         super(CNN_NLP, self).__init__()
         self.conv1d_list = nn.ModuleList([
