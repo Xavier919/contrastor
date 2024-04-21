@@ -64,8 +64,7 @@ if __name__ == "__main__":
     model.eval()
     for X, Y in test_dataloader:
         X = X.view(len(X), 5000, 300).to(device)
-        Y = Y.to(device)
-        outputs = model(X)
+        outputs = model(X).detach()
         results.append((outputs, Y))
         torch.cuda.empty_cache()
 
