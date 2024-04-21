@@ -89,7 +89,7 @@ if __name__ == "__main__":
         for X, Y in test_dataloader:
             X = X.view(len(X), 5000, 300).to(device)
             Y = Y.to(device)
-            outputs = model(X).view(-1)
+            outputs = model(X)
             loss = criterion(outputs, Y)
             test_losses += loss.item()
             test_writer.add_scalar("Loss/test", loss.item(), epoch)
