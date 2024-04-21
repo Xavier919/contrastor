@@ -66,6 +66,5 @@ if __name__ == "__main__":
         X = X.view(len(X), 5000, 300).to(device)
         outputs = model(X).detach()
         results.append((outputs, Y))
-        torch.cuda.empty_cache()
 
     pickle.dump(results, open(f'results_cnn_{args.split}.pkl', 'wb'))
