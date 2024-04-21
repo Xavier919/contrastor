@@ -59,11 +59,14 @@ if __name__ == "__main__":
 
     print(f"Split: {args.split}")
 
+    softmax = nn.Softmax(dim=1)
+
     results = []
     model.eval()
     for X, Y in test_dataloader:
         X = X.view(len(X), 5000, 300).to(device)
-        output = np.argmax(model(X).view(-1).cpu().detach())
+        output = model(X).view(-1)
+        output = np.argmax(softmax(output).cpu().detach())
         results.append((output.numpy(), Y.numpy()))
 
     pickle.dump(results, open(f'results_cnn_{args.split}.pkl', 'wb'))
