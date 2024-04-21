@@ -75,7 +75,7 @@ if __name__ == "__main__":
             X = X.view(len(X), 5000, 300).to(device)
             Y = Y.to(device)
             optimizer.zero_grad()
-            outputs = model(X).view(-1)
+            outputs = model(X)
             loss = criterion(outputs, Y)
             loss.backward()
             optimizer.step()
