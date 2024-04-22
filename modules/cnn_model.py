@@ -23,9 +23,7 @@ class CNN_NLP(nn.Module):
     def forward(self, x):
         x_reshaped = x.permute(0, 2, 1)
         x_conv_list = [F.relu(conv1d(x_reshaped)) for conv1d in self.conv1d_list]
-        x_pool_list = [F.max_pool1d(x_conv, kernel_size=x_conv.shape[2])
-            for x_conv in x_conv_list]
-        x_fc = torch.cat([x_pool.squeeze(dim=2) for x_pool in x_pool_list],
-                         dim=1)
+        x_pool_list = [F.max_pool1d(x_conv, kernel_size=x_conv.shape[2]) for x_conv in x_conv_list]
+        x_fc = torch.cat([x_pool.squeeze(dim=2) for x_pool in x_pool_list], dim=1)
         logits = self.fc(self.dropout(x_fc))
         return logits
