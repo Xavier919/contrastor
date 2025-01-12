@@ -52,3 +52,32 @@ Using the learned embeddings as input features, an SVM classifier achieved:
 - Recall: 0.942
 - F1 score: 0.941
 - Accuracy: 0.942
+
+## Project Structure
+
+### Core Modules
+- `modules/train_script.py`: Main training script for the Siamese Transformer model, implementing distributed training across multiple GPUs
+- `modules/transformer_model.py`: Implementation of the Siamese Transformer architecture with shared weights
+- `modules/utils.py`: Utility functions for data handling, evaluation metrics, and model training helpers
+- `modules/preprocess.py`: Text preprocessing pipeline including tokenization, cleaning, and normalization
+
+### CNN Implementation
+- `modules/cnn_model.py`: Implementation of the CNN architecture for text classification based on "Convolutional Neural Networks for Sentence Classification" (Yoon Kim, 2014)
+- `modules/train_cnn.py`: Training script for the CNN model with TensorBoard logging
+- `modules/eval_cnn.py`: Evaluation script for the trained CNN model
+
+### Analysis and Visualization
+- `visualization.ipynb`: Jupyter notebook containing visualization code for embeddings and model performance analysis
+- `requirements.txt`: List of Python dependencies required to run the project
+
+## CNN Architecture
+The CNN implementation follows the architecture proposed in "Convolutional Neural Networks for Sentence Classification" (Yoon Kim, 2014), featuring:
+- Multiple parallel convolutional filters of varying sizes
+- Max-over-time pooling
+- Dropout regularization
+- Dense output layer for classification
+
+## Contact
+For questions or issues, please open an issue in the GitHub repository.
+
+Last updated: Jan 11 2025
