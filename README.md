@@ -1,7 +1,7 @@
-# CONTRASTOR: Supervised Contrastive Learning of Document Embeddings with Siamese Transformers
+# CONTRASTOR : Supervised Contrastive Learning of Document Embeddings with Siamese Transformers
 
 ## Overview
-CONTRASTOR is a deep learning framework that applies supervised contrastive learning principles to derive document embeddings from high-dimensional textual data. The framework transforms text data into dense, 32-dimensional embeddings using a siamese transformer architecture. These embeddings can serve as input features for training standard machine learning classifiers like logistic regression, SVM, or neural networks for downstream tasks such as document classification.
+CONTRASTOR is a deep learning framework that applies supervised contrastive learning principles to derive document embeddings from high-dimensional textual data (Text2Vec). The framework transforms text data into dense, 32-dimensional embeddings using a siamese transformer architecture. These embeddings can serve as input features for training standard machine learning classifiers like logistic regression, SVM, or neural networks for downstream tasks such as document classification.
 
 ## Architecture
 
